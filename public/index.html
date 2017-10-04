@@ -1,0 +1,46 @@
+<html>
+<head>
+	<meta name="theme-color" content="#1976D2">
+	<link rel="manifest" href="manifest.json">
+	<base href="/">
+	<title>Certsys - Watson</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta property="og:image" content="conversation.svg" />
+	<meta property="og:title" content="Conversation Chat Simple" />
+	<meta property="og:description" content="Sample application that shows how to use the Conversation API to identify user intents" />
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+	
+	<div id="contentParent" class="responsive-columns-wrapper">
+
+		<div id="chat-column-holder" class="responsive-column content-column">
+			<div id="imgResponsive"></div>
+			<div class="chat-column">		
+				<div id="scrollingChat">
+					<div class="segments load">
+						<div class="from-watson latest top">
+						</div>
+					</div>
+
+				</div>
+				<div id="inputContainer">
+					<input id="textInput" class="input responsive-column" placeholder="Pergunte para o ULTRA..." type="text" onkeydown="ConversationPanel.inputKeyDown(event, this)">
+					<div style="padding: .44rem 0 0 0;" onclick="ConversationPanel.inputSend(document.getElementById('textInput'))">
+						<svg style="width:24px;height:24px;" viewBox="0 0 24 24">
+    						<path fill="#002E5E" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"></path>
+    					</svg>
+    				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/common.js"></script>
+	<script src="js/api.js"></script>
+	<script src="js/conversation.js"></script>
+	<script src="js/global.js"></script>
+</body>
+</html>

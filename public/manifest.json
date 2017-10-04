@@ -1,0 +1,14 @@
+{
+  "short_name": "ULTRA",
+  "name": "ULTRA Bot",
+  "icons": [
+    {
+     "src": "./logoUltra.png",
+     "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0067A0",
+  "background_color": "#ffffff"
+}
