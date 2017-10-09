@@ -2,104 +2,139 @@
 // all display and behaviors of the conversation column of the app.
 /* eslint no-unused-vars: "off" */
 /* global Api: true, Common: true*/
+/* global document, window*/
+/* exported ConversationPanel*/
+/* eslint no-console: ["error", { allow: ["log", "warn", "error"] }] */
 
-const ConversationPanel = (function () {
-  const settings = {
+var initial = true;
+var contextoLocal = {};
+
+var escape = function(str) {
+  return (str.replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\//g, '&#x2F;')
+        .replace(/\\/g, '&#x5C;')
+        .replace(/`/g, '&#96;'));
+}
+
+var ConversationPanel = (function() {
+  var settings = {
     selectors: {
       chatBox: '#scrollingChat',
       fromUser: '.from-user',
       fromWatson: '.from-watson',
       latest: '.latest',
+      textInputLocation: '#textInputLocation',
+      loginSection: '#loginSection',
+      conversationSection: '#conversationSection',
+      textInputOne: '#textInputOne'
     },
     authorTypes: {
       user: 'user',
-      watson: 'watson',
-    },
+      watson: 'watson'
+    }
   };
 
   // Publicly accessible methods defined
   return {
-    init,
-    inputKeyDown,
-    inputSend
+    init: init,
+    inputKeyDown: inputKeyDown,
+    btnClicked: btnClicked,
+    menuClicked: menuClicked
   };
 
   // Initialize the module
   function init() {
     chatUpdateSetup();
-    Api.sendRequest('', null);
+    Api.sendRequest( null, null );
+
+    initial = false;
     setupInputBox();
   }
   // Set up callbacks on payload setters in Api module
   // This causes the displayMessage function to be called when messages are sent / received
   function chatUpdateSetup() {
-    const currentRequestPayloadSetter = Api.setRequestPayload;
-    Api.setRequestPayload = function (newPayloadStr) {
+    var currentRequestPayloadSetter = Api.setRequestPayload;
+    Api.setRequestPayload = function(newPayloadStr) {
       currentRequestPayloadSetter.call(Api, newPayloadStr);
       displayMessage(JSON.parse(newPayloadStr), settings.authorTypes.user);
     };
 
-    const currentResponsePayloadSetter = Api.setResponsePayload;
-    Api.setResponsePayload = function (newPayloadStr) {
+    var currentResponsePayloadSetter = Api.setResponsePayload;
+    Api.setResponsePayload = function(newPayloadStr) {
       currentResponsePayloadSetter.call(Api, newPayloadStr);
       displayMessage(JSON.parse(newPayloadStr), settings.authorTypes.watson);
     };
   }
 
-// Set up the input box to underline text as it is typed
-  // This is done by creating a hidden dummy version of the input box that
-  // is used to determine what the width of the input text should be.
-  // This value is then used to set the new width of the visible input box.
   function setupInputBox() {
-    const input = document.getElementById('textInput');
-    let dummy = document.getElementById('textInputDummy');
-    const minFontSize = 14;
-    const maxFontSize = 16;
-    const minPadding = 4;
-    const maxPadding = 6;
+    var input = document.getElementById('textInput');
+    var dummy = document.getElementById('textInputDummy');
+    var padding = 3;
 
-    // If no dummy input box exists, create one
     if (dummy === null) {
-      const dummyJson = {
-        tagName: 'div',
-        attributes: [{
-          name: 'id',
-          value: 'textInputDummy',
-        }],
+      var dummyJson = {
+        'tagName': 'div',
+        'attributes': [{
+          'name': 'id',
+          'value': 'textInputDummy'
+        }]
       };
 
       dummy = Common.buildDomElement(dummyJson);
+      ['font-size', 'font-style', 'font-weight', 'font-family', 'line-height', 'text-transform', 'letter-spacing'].forEach(function(index) {
+            if(input !== null) {
+               dummy.style[index] = window.getComputedStyle( input, null ).getPropertyValue( index );
+            }
+      });
+
       document.body.appendChild(dummy);
     }
 
-
-    // Any time the input changes, or the window resizes, adjust the size of the input box
-
-
-    // Trigger the input event once to set up the input box and dummy element
-    Common.fireEvent(input, 'input');
+    if(input !== null) {
+        input.addEventListener('input', function() {
+              if (this.value === '') {
+                this.classList.remove('underline');
+                this.setAttribute('style', 'width:' + '100%');
+                this.style.width = '100%';
+              } else {
+                this.classList.add('underline');
+                var txtNode = document.createTextNode(escape(this.value));
+                dummy.textContent = escape(txtNode.textContent);
+                var widthValue = ( dummy.offsetWidth + padding) + 'px';
+                this.setAttribute('style', 'width:' + widthValue);
+                this.style.width = widthValue;
+              }
+            });
+        Common.fireEvent(input, 'input');
+    }
   }
 
   // Display a user or Watson message that has just been sent/received
   function displayMessage(newPayload, typeValue) {
-    const isUser = isUserMessage(typeValue);
-    const textExists = (newPayload.input && newPayload.input.text)
+    if (initial)
+      return;
+    var isUser = isUserMessage(typeValue);
+    var textExists = (newPayload.input && newPayload.input.text)
       || (newPayload.output && newPayload.output.text);
     if (isUser !== null && textExists) {
       // Create new message DOM element
-      const messageDivs = buildMessageDomElements(newPayload, isUser);
-      const chatBoxElement = document.querySelector(settings.selectors.chatBox);
-      const previousLatest = chatBoxElement.querySelectorAll((isUser
+      var messageDivs = buildMessageDomElements(newPayload, isUser);
+      var chatBoxElement = document.querySelector(settings.selectors.chatBox);
+      var previousLatest = chatBoxElement.querySelectorAll((isUser
               ? settings.selectors.fromUser : settings.selectors.fromWatson)
               + settings.selectors.latest);
       // Previous "latest" message is no longer the most recent
       if (previousLatest) {
-        Common.listForEach(previousLatest, (element) => {
+        Common.listForEach(previousLatest, function(element) {
           element.classList.remove('latest');
         });
       }
 
-      messageDivs.forEach((currentDiv) => {
+      messageDivs.forEach(function(currentDiv) {
         chatBoxElement.appendChild(currentDiv);
         // Class to start fade in animation
         currentDiv.classList.add('load');
@@ -123,37 +158,91 @@ const ConversationPanel = (function () {
 
   // Constructs new DOM element from a message payload
   function buildMessageDomElements(newPayload, isUser) {
-    let textArray = isUser ? newPayload.input.text : newPayload.output.text;
-    if (Object.prototype.toString.call(textArray) !== '[object Array]') {
-      textArray = [textArray];
+    var currentText = isUser ? newPayload.input.text : newPayload.output.text;
+    if (Array.isArray(currentText)) {
+		//currentText = currentText.join('<br/>');
+		//FIX for empty string at UI
+		currentText = currentText.filter(function (val) {return val;}).join('<br/>');
     }
-    const messageArray = [];
-
-    textArray.forEach((currentText) => {
+    var messageArray = [];
+    var summary = '&nbsp';
+    var antigo = document.getElementsByClassName("feedback-container");
+    if (antigo.length > 0) {
+      if (antigo[0].parentElement)
+        antigo[0].parentElement.removeChild(antigo[0]);
+    }
       if (currentText) {
-        const messageJson = {
+        var messageJson = {
           // <div class='segments'>
-          tagName: 'div',
-          classNames: ['segments'],
-          children: [{
+          'tagName': 'div',
+          'classNames': ['segments'],
+          'children': [{
             // <div class='from-user/from-watson latest'>
-            tagName: 'div',
-            classNames: [(isUser ? 'from-user' : 'from-watson'), 'latest', ((messageArray.length === 0) ? 'top' : 'sub')],
-            children: [{
+            'tagName': 'div',
+            'classNames': [(isUser ? 'from-user' : 'from-watson'), 'latest', ((messageArray.length === 0) ? 'top' : 'sub')],
+            'children': [{
+                'tagName': 'div',
+                'classNames': ['summary'],
+                'text': summary
+              }, {
               // <div class='message-inner'>
-              tagName: 'div',
-              classNames: ['message-inner'],
-              children: [{
-                // <p>{messageText}</p>
-                tagName: 'p',
-                text: currentText,
-              }],
-            }],
-          }],
+              'tagName': 'div',
+              'classNames': ['message-inner'],
+              'children': [{
+                  // <p>{messageText}</p>
+                  'tagName': 'p',
+                  // Luis Hansen
+                  'text': isUser ? escape(currentText) : currentText
+              }, (newPayload.intents) ? {
+                // <div id='feedback'>
+                'tagName': 'div',
+                'classNames': ['feedback-container'],
+                'children': [
+                  (newPayload.intents.length > 0) ?
+                  {
+                    'tagName': 'span',
+                    'text': "Essa resposta foi útil? ",
+                    'classNames': ['span-text', 'feedback']
+                  }:{},
+
+
+                  {
+                    //<div class='thumbsup'>
+                    'tagName': 'div',
+                    'classNames': (!isUser && newPayload.intents.length > 0) ? ['feedback', 'thumbsup'] : []
+                  },
+                  {
+                    //<div class='thumbsdown'>
+                    'tagName': 'div',
+                    'classNames': (!isUser && newPayload.intents.length > 0) ? ['feedback', 'thumbsdown'] : []
+                  }
+                ]
+              } : {} ]
+            }
+            ]
+          }]
         };
         messageArray.push(Common.buildDomElement(messageJson));
-      }
-    });
+        // console.log(messageArray);
+        // if (newPayload.output && newPayload.output.text[0] === "O procedimento é o seguinte: manualferias") {
+        //   console.log("eita");
+        //     var element = document.createElement("a");
+        //     element.setAttribute("href", "/manuais/ferias.pdf");
+        //     element.innerHTML="Manual";
+        //     console.log(element);
+        //   console.log("oi");
+
+        //   messageArray.push(element);
+        //   console.log(messageArray);
+        //   // messageArray.push(() => {
+        //   //   var element = document.createElement("a");
+        //   //   element.setAttribute("href", "/manuais/ferias.pdf");
+        //   //   element.innerHTML="Manual";
+        //   //   console.log(element);
+        //   //   return element
+        //   // });
+        // }
+    }
 
     return messageArray;
   }
@@ -164,39 +253,85 @@ const ConversationPanel = (function () {
   //   This is done so that the "context" of the conversation is maintained in the view,
   //   even if the Watson message is long.
   function scrollToChatBottom() {
-    const scrollingChat = document.querySelector('#scrollingChat');
+    var scrollingChat = document.querySelector('#scrollingChat');
 
     // Scroll to the latest message sent by the user
-    const scrollEl = scrollingChat.querySelector(settings.selectors.fromUser
-            + settings.selectors.latest);
+    var scrollEl = scrollingChat.querySelector(settings.selectors.fromUser + settings.selectors.latest);
     if (scrollEl) {
       scrollingChat.scrollTop = scrollEl.offsetTop;
-    }
-  }
-
-  function inputSend(inputBox) {
-    if (inputBox.value.trim()) {
-      // Retrieve the context from the previous server response
-      let context;
-      const latestResponse = Api.getResponsePayload();
-      if (latestResponse) {
-        context = latestResponse.context;
-      }
-
-      // Send the user message
-      Api.sendRequest(inputBox.value, context);
-
-      // Clear input box for further messages
-      inputBox.value = '';
-      Common.fireEvent(inputBox, 'input');
     }
   }
 
   // Handles the submission of input
   function inputKeyDown(event, inputBox) {
     // Submit on enter key, dis-allowing blank messages
-    if (event.keyCode === 13) {
-      inputSend(inputBox);
+    if (contextoLocal.encerrar)
+          return
+    var value = inputBox.value.replace(/\n/g, "");
+    if (event.keyCode === 13 && value) {
+      if (!startTime)
+        startTime = new Date();
+
+      if (timer.getStatus() == 'started') {
+        timer.stop();
+        timer.start(tempoInatividade).on('end', function() {
+          finalizarInatividade();
+        });
+      } else {
+        timer.start(tempoInatividade).on('end', function() {
+          finalizarInatividade();
+        });
+      }
+      
+
+
+      // Retrieve the context from the previous server response;
+      var latestResponse = Api.getResponsePayload();
+      if (latestResponse) {
+        contextoLocal = latestResponse.context;
+      }
+      
+      // Send the user message
+      Api.sendRequest(value, contextoLocal);
+
+      // Clear input box for further messages
+      Common.fireEvent(inputBox, 'input');
+      setTimeout(function(){
+        inputBox.value = '';
+      }, 1);
     }
   }
+
+  //Handles the click event of login
+  function btnClicked(event) {
+    if (event.keyCode === undefined || event.keyCode === 13) {
+      /*if(settings.selectors.textInputLocation.value === '') {
+        return;
+      }*/
+      settings.selectors.loginSection.classList.add('hide');
+      settings.selectors.conversationSection.classList.remove('hide');
+      settings.selectors.textInputOne.focus();
+    }
+  }
+
+  //Handles the click event of Menu button
+  function menuClicked(event) {
+    var drawer = document.getElementsByClassName('drawer')[0],
+    closeDrawer = document.getElementsByClassName('close-drawer')[0];
+
+    event.preventDefault();
+      if (drawer.classList.contains('open')) {
+          drawer.classList.remove('open');
+      } else {
+          drawer.classList.add('open');
+          drawer.classList.remove('close');
+      }
+
+      closeDrawer.addEventListener('click', function(e) {
+          e.preventDefault();
+          drawer.classList.remove('open');
+      });
+
+  }
+
 }());

@@ -1,46 +1,114 @@
 <html>
 <head>
-	<meta name="theme-color" content="#1976D2">
-	<link rel="manifest" href="manifest.json">
 	<base href="/">
-	<title>Certsys - Watson</title>
+	<title>Bot ULTRA - Alpha</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta property="og:image" content="conversation.svg" />
-	<meta property="og:title" content="Conversation Chat Simple" />
-	<meta property="og:description" content="Sample application that shows how to use the Conversation API to identify user intents" />
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-	<link rel="stylesheet" href="css/app.css">
+	<meta property="og:title" content="Bot ULTRA" />
+	<meta property="og:description" content="Certsys - 2017" />
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" type="text/css" href="css/magic-input.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.4.0/sweetalert2.min.css">
+
 </head>
 <body>
-	
-	<div id="contentParent" class="responsive-columns-wrapper">
 
-		<div id="chat-column-holder" class="responsive-column content-column">
-			<div id="imgResponsive"></div>
-			<div class="chat-column">		
-				<div id="scrollingChat">
-					<div class="segments load">
-						<div class="from-watson latest top">
-						</div>
-					</div>
+	<div id="modal1" class="modal">
+	    <div class="modal-content">
+	      <h3>Certsys 2017</h3>
+	    </div>
+	    <div class="modal-footer">
+	      <a href="javascript:void(0);" class=" modal-action modal-close btn-laranja">FECHAR</a>
+	    </div>
+	</div>
 
+	<div class="template" id="pesquisa">
+		<div id="form-pesquisa-satisfacao">
+			<br>
+			<h1 id="textofinal"><b>Agradecemos o seu contato.</b></h1>
+			<form onsubmit="enviarFeedback(this)">
+				<div id="textofinal"><h2>Sua opinião é muito importante para o bot ULTRA. Por favor, ajude-nos a melhorar nossos serviços avaliando o atendimento desse assistente virtual.</h2><br><h2>Como foi sua experiência?</h2></div>
+				<div id="checkbuttons">
+					<p>
+						<input type="radio" class="radioPosicao mgc mgc-success" name="pesquisaCheck" value="Otimo" required checked /> 
+						<span class="spanPesquisa">Ótima</span>
+					</p>
+					<p>
+						<input type="radio" class="radioPosicao mgc mgc-primary" name="pesquisaCheck" value="Bom" required /> 
+						<span class="spanPesquisa">Boa</span>
+					</p>
+					<p>
+						<input type="radio" class="radioPosicao mgc mgc-info" name="pesquisaCheck" value="Regular" required /> 
+						<span class="spanPesquisa">Regular</span>
+					</p>
+					<p>
+						<input type="radio" class="radioPosicao mgc mgc-warning" name="pesquisaCheck" value="Ruim" required /> 
+						<span class="spanPesquisa">Ruim</span>
+					</p>
+					<p>
+						<input type="radio" class="radioPosicao mgc mgc-danger" name="pesquisaCheck" value="Pessimo" required /> 
+						<span class="spanPesquisa">Péssima</span>
+					</p>
 				</div>
-				<div id="inputContainer">
-					<input id="textInput" class="input responsive-column" placeholder="Pergunte para o ULTRA..." type="text" onkeydown="ConversationPanel.inputKeyDown(event, this)">
-					<div style="padding: .44rem 0 0 0;" onclick="ConversationPanel.inputSend(document.getElementById('textInput'))">
-						<svg style="width:24px;height:24px;" viewBox="0 0 24 24">
-    						<path fill="#002E5E" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"></path>
-    					</svg>
-    				</div>
-				</div>
-			</div>
+				<br>
+				<textarea rows="4" cols="50" id="pesquisaText" name="pesquisaText" placeholder="Digite aqui sua sugestão, elogio ou crítica...."></textarea><br><br>
+				<input id="submitpesquisa" class="botaoFinalizarPesquisa" type="submit" name="submit" value="ENVIAR">
+			</form>
 		</div>
 	</div>
 
+	<header>
+		<div class="wrapper">
+			<h1 class="base--h1">
+				<a href="/"><img class="base--h1-icon" src="images/img/logoUltra.jpg" alt="ULTRA"></a>
+			</h1>
+			<div class="top-bar--spacer div-info">
+				<span>Bot ULTRA</span>
+			</div>
+			<div class="info"><a href="#modal1"><img id="info" src="images/explanation_icon.svg"></a></div>
+	    </div>
+  	</header>
+
+ 	<section class="_full-width-row conversationSection" id='conversationSection'>
+	    <div class="">
+	    	<!--<div id="view-change-button" class="button hide" onclick="PayloadPanel.togglePanel(event, this)">
+		    	<img class="option full" src="../images/chat-button.png">
+		    	<img class="option not-full" src="../images/code-button.png">
+		  	</div>-->
+		  	<div id="contentParent" class="responsive-columns-wrapper">
+		    	<div id="chat-column-holder" class="responsive-column content-column">
+					
+					<div class="chat-column">
+						<div id="scrollingChat" class='scrollingChat'></div>
+						<label for="textInputOne" class="inputOutline">
+						<textarea id="textInputOne" class="base--input query-input" placeholder="Digite aqui sua pergunta...." onkeydown="ConversationPanel.inputKeyDown(event, this)"></textarea>
+						</label>
+						<div class="div-encerrar">
+							<input type="button" id="enviarTexto" value="ENVIAR" /><br>
+							<input type="button" id="finalizar" value="SAIR DO CHAT" />
+						</div> 
+					</div>
+					<div id="payload-initial-message" class="hide"></div>
+					<div id="payload-initial-message" class="hide"></div>
+					<div id="payload-request" class="hide"></div>
+					<div id="payload-response" class="hide"></div>
+		    	</div>
+		  	</div>
+	    </div>
+		<audio id="myAudioElement"/>
+	</section>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.0.5/es6-promise.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.4.0/sweetalert2.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
 	<script src="js/common.js"></script>
 	<script src="js/api.js"></script>
 	<script src="js/conversation.js"></script>
+	<script src="js/payload.js"></script>
 	<script src="js/global.js"></script>
 </body>
 </html>

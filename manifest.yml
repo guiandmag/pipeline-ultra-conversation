@@ -2,14 +2,15 @@
 declared-services:
   conversation-service:
     label: conversation
-    plan: free
+    plan: standard
 applications:
-- name: unimed-demo-app
+- name: senac-pre
   command: npm start
   path: .
   memory: 512M
   instances: 1
   services:
-  - Unimed-Bot
+  - Text to Speech-senacmvp
+  - Conversation-SenacMVP
   env:
     NPM_CONFIG_PRODUCTION: false
