@@ -267,7 +267,7 @@ var ConversationPanel = (function() {
     // Submit on enter key, dis-allowing blank messages
     if (contextoLocal.encerrar)
           return
-    var value = inputBox.value.replace(/\n/g, "");
+    var value = inputBox.value.trim().replace(/\n/g, "");
     if (event.keyCode === 13 && value) {
       if (!startTime)
         startTime = new Date();
