@@ -2,15 +2,14 @@
 declared-services:
   conversation-service:
     label: conversation
-    plan: standard
+    plan: lite
 applications:
-- name: senac-pre
+- name: botultradev
   command: npm start
   path: .
   memory: 512M
   instances: 1
   services:
-  - Text to Speech-senacmvp
-  - Conversation-SenacMVP
+  - ConversationULTRA-lite
   env:
     NPM_CONFIG_PRODUCTION: false
