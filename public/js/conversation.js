@@ -8,9 +8,24 @@
 
 var initial = true;
 var contextoLocal = {};
+var historico = [];
+var conversaId = makeid(5);
+
+function makeid(num) {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$%!?+-*";
+
+  for (var i = 0; i < num; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+}
 
 var escape = function(str) {
+  console.log(str);
   return (str.replace(/&/g, '&amp;')
+        .replace(/\<br\>/gi, '\n')
+        .replace(/\<br\/\>/gi, '\n')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#x27;')
         .replace(/</g, '&lt;')
@@ -172,6 +187,8 @@ var ConversationPanel = (function() {
         antigo[0].parentElement.removeChild(antigo[0]);
     }
       if (currentText) {
+        historico.push((isUser ? "Usuário: " : "Watson: ") + escape(currentText));
+        console.log(historico);
         var messageJson = {
           // <div class='segments'>
           'tagName': 'div',
